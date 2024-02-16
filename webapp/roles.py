@@ -1,8 +1,8 @@
 from flask import Blueprint, request
 
-auth = Blueprint("auth", __name__)
+roles = Blueprint("roles", __name__)
 
-@auth.route("/login", methods=['POST', 'GET'])
+@roles.route("/login", methods=['POST', 'GET'])
 def login():
   data = request.form
   print(data)
