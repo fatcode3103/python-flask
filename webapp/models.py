@@ -1,7 +1,6 @@
 from sqlalchemy import Integer, Column, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import create_engine
 from datetime import datetime
 from . import get_engine
 
@@ -24,7 +23,8 @@ class Role(Base):
     group_permission = relationship("GroupPermission", back_populates="role")
 
     def __str__(self):
-        return self.name
+        data = {"id": self.id, "name": self.name}
+        return data
 
 
 class User(Base):
