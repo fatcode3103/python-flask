@@ -1,5 +1,5 @@
-import json
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload
 
 from .models import User
 from . import get_session
@@ -9,14 +9,17 @@ users = Blueprint("users", __name__)
 session = get_session()
 
 
-def get_users_data():
-    all_users = session.query(User).all()
+def get_users_with_roles_data():
+    session = get_session()
+    users_with_roles = session.query(User).options(joinedload(User.role)).all()
+
     users_data = []
-    for user in all_users:
+    for user in users_with_roles:
         user_data = {
             "id": user.id,
             "name": user.name,
             "role_id": user.role_id,
+            "role_name": user.role.name if user.role else "none",
             "created_at": user.created_at,
             "updated_at": user.updated_at,
         }
@@ -27,7 +30,7 @@ def get_users_data():
 @users.route("/users", methods=["GET"])
 def get_users():
     try:
-        users_data = get_users_data()
+        users_data = get_users_with_roles_data()
         return jsonify({"data": users_data, "message": "Get users successful"}), 200
     except Exception as ex:
         print(f"Error{ex}")
@@ -41,7 +44,7 @@ def add_user():
     try:
         new_user = User(name=request.json["name"], role_id=request.json["role_id"])
         session.add(new_user)
-        users_data = get_users_data()
+        users_data = get_users_with_roles_data()
         return (
             jsonify({"data": users_data, "message": "Create new user successful"}),
             200,
@@ -60,7 +63,7 @@ def delete_user():
         user = session.query(User).filter_by(id=user_id).first()
         session.delete(user)
         session.commit()
-        users_data = get_users_data()
+        users_data = get_users_with_roles_data()
         return jsonify({"data": users_data, "message": "Delete user successful"}), 200
     except Exception as ex:
         print(f"Error{ex}")
@@ -81,7 +84,7 @@ def update_user():
         user.name = name
         user.role_id = role_id
         session.commit()
-        users_data = get_users_data()
+        users_data = get_users_with_roles_data()
         return jsonify({"data": users_data, "message": "Update user successful"}), 200
     except Exception as ex:
         print(f"Error{ex}")
