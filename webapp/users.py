@@ -57,12 +57,14 @@ def add_user():
         new_user = User(name=request.json["name"], role_id=request.json["role_id"])
         session.add(new_user)
         users_data = get_users_with_roles_data()
+        session.commit()
         return (
             jsonify({"data": users_data, "message": "Create new user successful"}),
             200,
         )
     except Exception as ex:
         print(f"Error{ex}")
+        session.rollback()
         return jsonify({"message": "Add new failed"}), 500
     finally:
         session.close()
