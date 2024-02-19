@@ -1,58 +1,91 @@
+import json
 from flask import Blueprint, jsonify, request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
 from .models import User
+from . import get_session
 
 users = Blueprint("users", __name__)
 
-def get_session():
-  user = 'root'
-  password = 'Root_12345'
-  host = 'localhost'
-  database = 'demo_python_connect_db'
-
-  engine = create_engine(f"mysql+pymysql://{user}:{password}@{host}/{database}")
-  Session = sessionmaker(bind=engine)
-  session = Session()
-  return session
-
 session = get_session()
 
-@users.route("/users", methods=['GET'])
-def get_users():
-  try:
-    all_users = session.query(User).all()
-    session.close()
 
+def get_users_data():
+    all_users = session.query(User).all()
     users_data = []
     for user in all_users:
-      user_data = {
-        'id': user.id,
-        'name': user.name,
-        'role_id': user.role_id,
-        'created_at': user.created_at,
-        'updated_at': user.updated_at
-      }
-      users_data.append(user_data)
+        user_data = {
+            "id": user.id,
+            "name": user.name,
+            "role_id": user.role_id,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+        }
+        users_data.append(user_data)
+    return users_data
 
-      
-    return jsonify({"data": users_data, "message": "Get users successful"})
-  except Exception as ex:
-    print(f"Error{ex}")
-    return jsonify({"message": "Get users failed"}), 500
-  finally:
-    session.close()
 
-@users.route("/add-user", methods=['POST'])
+@users.route("/users", methods=["GET"])
+def get_users():
+    try:
+        users_data = get_users_data()
+        return jsonify({"data": users_data, "message": "Get users successful"}), 200
+    except Exception as ex:
+        print(f"Error{ex}")
+        return jsonify({"message": "Get users failed"}), 500
+    finally:
+        session.close()
+
+
+@users.route("/add-user", methods=["POST"])
 def add_user():
-  try:
-    new_user = User(name=request.json["name"], role_id=request.json["role_id"])
-    session.add(new_user)
-    session.commit()
-    return jsonify({"data": "", "message": "Create new user successful"})
-  except Exception as ex:
-    print(f"Error{ex}")
-    session.rollback()
-    return jsonify({"message": "Add new failed"}), 500
-  finally:
-    session.close()
+    try:
+        new_user = User(name=request.json["name"], role_id=request.json["role_id"])
+        session.add(new_user)
+        users_data = get_users_data()
+        return (
+            jsonify({"data": users_data, "message": "Create new user successful"}),
+            200,
+        )
+    except Exception as ex:
+        print(f"Error{ex}")
+        return jsonify({"message": "Add new failed"}), 500
+    finally:
+        session.close()
+
+
+@users.route("/delete-user", methods=["DELETE"])
+def delete_user():
+    try:
+        user_id = request.args.get("user_id")
+        user = session.query(User).filter_by(id=user_id).first()
+        session.delete(user)
+        session.commit()
+        users_data = get_users_data()
+        return jsonify({"data": users_data, "message": "Delete user successful"}), 200
+    except Exception as ex:
+        print(f"Error{ex}")
+        session.rollback()
+        return jsonify({"message": "Delete user failed"}), 500
+    finally:
+        session.close()
+
+
+@users.route("/update-user", methods=["PUT"])
+def update_user():
+    try:
+        user_id = request.json["user_id"]
+        user = session.query(User).filter_by(id=user_id).first()
+        name = request.json["name"]
+        role_id = request.json["role_id"]
+
+        user.name = name
+        user.role_id = role_id
+        session.commit()
+        users_data = get_users_data()
+        return jsonify({"data": users_data, "message": "Update user successful"}), 200
+    except Exception as ex:
+        print(f"Error{ex}")
+        session.rollback()
+        return jsonify({"message": "Update user failed"}), 500
+    finally:
+        session.close()
