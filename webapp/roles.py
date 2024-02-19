@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from . import get_session
 from .models import Role
+from .models import Permission
 
 roles = Blueprint("roles", __name__)
 
@@ -81,5 +82,103 @@ def update_role():
         print(f"Error{ex}")
         session.rollback()
         return jsonify({"message": "Update role failed"}), 500
+    finally:
+        session.close()
+
+
+def get_all_permissions():
+    all_permissions = session.query(Permission).all()
+    permissions_data = []
+    for per_data in all_permissions:
+        data = {
+            "id": per_data.id,
+            "name": per_data.name,
+            "created_at": per_data.created_at,
+            "updated_at": per_data.updated_at,
+        }
+        permissions_data.append(data)
+    return permissions_data
+
+
+@roles.route("/permissions", methods=["GET"])
+def get_permission():
+    try:
+        permissions_data = get_all_permissions()
+        return (
+            jsonify(
+                {"data": permissions_data, "message": "Get permissions successful"}
+            ),
+            200,
+        )
+    except Exception as ex:
+        print(f"Error{ex}")
+        return jsonify({"message": "Get permissions failed"}), 500
+    finally:
+        session.close()
+
+
+@roles.route("/delete-permissions", methods=["DELETE"])
+def delete_permission():
+    try:
+        per_id = request.args.get("permission_id")
+        permission = session.query(Permission).filter_by(id=per_id).first()
+        session.delete(permission)
+        session.commit()
+        permissions_data = get_all_permissions()
+        return (
+            jsonify(
+                {"data": permissions_data, "message": "Delte permissions successful"}
+            ),
+            200,
+        )
+    except Exception as ex:
+        print(f"Error{ex}")
+        session.rollback()
+        return jsonify({"message": "Delte permissions failed"}), 500
+    finally:
+        session.close()
+
+
+@roles.route("/add-permission", methods=["POST"])
+def add_permission():
+    try:
+        name = request.json["name"]
+        new_permission = Permission(name=name)
+        session.add(new_permission)
+        session.commit()
+        permissions_data = get_all_permissions()
+        return (
+            jsonify(
+                {"data": permissions_data, "message": "Add new permissions successful"}
+            ),
+            200,
+        )
+    except Exception as ex:
+        print(f"Error{ex}")
+        session.rollback()
+        return jsonify({"message": "Add new permissions failed"}), 500
+    finally:
+        session.close()
+
+
+@roles.route("/update-permission", methods=["PUT"])
+def update_permission():
+    try:
+        new_name = request.json["name"]
+        per_id = request.json["permisson_id"]
+        permission = session.query(Permission).filter_by(id=per_id).first()
+        permission.name = new_name
+        session.commit()
+        permissions_data = get_all_permissions()
+        return (
+            jsonify(
+                {"data": permissions_data, "message": "Update permissions successful"}
+            ),
+            200,
+        )
+    except Exception as ex:
+        print(f"Error{ex}")
+        session.rollback()
+        return jsonify({"message": "Update permissions failed"}), 500
     finally:
         session.close()
