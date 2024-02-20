@@ -4,6 +4,7 @@ from sqlalchemy.orm import joinedload, contains_eager
 from .models import User
 from .models import Role
 from . import get_session
+import json
 
 users = Blueprint("users", __name__)
 
@@ -55,8 +56,8 @@ def add_user():
     try:
         session = get_session()
         new_user = User(name=request.json["name"], role_id=request.json["role_id"])
-        session.add(new_user)
         users_data = get_users_with_roles_data()
+        session.add(new_user)
         session.commit()
         return (
             jsonify({"data": users_data, "message": "Create new user successful"}),
@@ -73,6 +74,7 @@ def add_user():
 @users.route("/delete-user", methods=["DELETE"])
 def delete_user():
     try:
+        print("user_id", user_id)
         session = get_session()
         user_id = request.args.get("user_id")
         user = session.query(User).filter_by(id=user_id).first()
