@@ -2,12 +2,13 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from webapp import create_app
-from webapp.models import Base, User, Role, Permission, GroupPermission
+from webapp.models import Base, Role, Permission, GroupPermission
 
 
 @pytest.fixture(scope="session")
 def db_engine():
     engine = create_engine("sqlite:///:memory:")
+    # create tables after defined
     Base.metadata.create_all(engine)
     return engine
 

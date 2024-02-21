@@ -41,8 +41,8 @@ def get_users_with_roles_data():
 
 @users.route("/users", methods=["GET"])
 def get_users():
+    session = get_session()
     try:
-        session = get_session()
         users_data = get_users_with_roles_data()
         return jsonify({"data": users_data, "message": "Get users successful"}), 200
     except Exception as ex:
@@ -54,8 +54,8 @@ def get_users():
 
 @users.route("/add-user", methods=["POST"])
 def add_user():
+    session = get_session()
     try:
-        session = get_session()
         new_user = User(name=request.json["name"], role_id=request.json["role_id"])
         session.add(new_user)
         session.commit()
@@ -74,9 +74,8 @@ def add_user():
 
 @users.route("/delete-user", methods=["DELETE"])
 def delete_user():
+    session = get_session()
     try:
-        print("user_id", user_id)
-        session = get_session()
         user_id = request.args.get("user_id")
         user = session.query(User).filter_by(id=user_id).first()
         session.delete(user)
@@ -93,8 +92,8 @@ def delete_user():
 
 @users.route("/update-user", methods=["PUT"])
 def update_user():
+    session = get_session()
     try:
-        session = get_session()
         user_id = request.json["user_id"]
         user = session.query(User).filter_by(id=user_id).first()
         name = request.json["name"]
@@ -103,8 +102,8 @@ def update_user():
         user.name = name
         user.role_id = role_id
         session.commit()
-        users_data = get_users_with_roles_data()
-        return jsonify({"data": users_data, "message": "Update user successful"}), 200
+        crr_user = {"name": name, "role_id": role_id}
+        return jsonify({"data": crr_user, "message": "Update user successful"}), 200
     except Exception as ex:
         print(f"Error{ex}")
         session.rollback()

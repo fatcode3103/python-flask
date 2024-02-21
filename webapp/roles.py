@@ -28,8 +28,8 @@ def get_all_roles():
 
 @roles.route("/roles", methods=["GET"])
 def get_roles():
+    session = get_session()
     try:
-        session = get_session()
         roles_data = get_all_roles()
         return jsonify({"data": roles_data, "message": "Get roles successful"}), 200
     except Exception as ex:
@@ -41,8 +41,8 @@ def get_roles():
 
 @roles.route("/add-role", methods=["POST"])
 def add_new_role():
+    session = get_session()
     try:
-        session = get_session()
         name = request.json["name"]
         new_role = Role(name=name)
         session.add(new_role)
@@ -69,8 +69,8 @@ def add_new_role():
 
 @roles.route("/delete-role", methods=["DELETE"])
 def delete_role():
+    session = get_session()
     try:
-        session = get_session()
         role_id = request.args.get("role_id")
         role = session.query(Role).filter_by(id=role_id).first()
         delete_stmt = delete(GroupPermission).where(GroupPermission.role_id == role_id)
@@ -91,8 +91,8 @@ def delete_role():
 
 @roles.route("/update-role", methods=["PUT"])
 def update_role():
+    session = get_session()
     try:
-        session = get_session()
         role_id = request.json["role_id"]
         new_permission = request.json["permission_id"]
         new_name = request.json["name"]
@@ -131,8 +131,8 @@ def update_role():
         session.close()
 
 
+session = get_session()
 def get_all_permissions():
-    session = get_session()
     all_permissions = session.query(Permission).all()
     permissions_data = []
     for per_data in all_permissions:
@@ -148,8 +148,8 @@ def get_all_permissions():
 
 @roles.route("/permissions", methods=["GET"])
 def get_permission():
+    session = get_session()
     try:
-        session = get_session()
         permissions_data = get_all_permissions()
         return (
             jsonify(
@@ -166,8 +166,8 @@ def get_permission():
 
 @roles.route("/delete-permissions", methods=["DELETE"])
 def delete_permission():
+    session = get_session()
     try:
-        session = get_session()
         per_id = request.args.get("permission_id")
         permission = session.query(Permission).filter_by(id=per_id).first()
         session.delete(permission)
@@ -189,8 +189,8 @@ def delete_permission():
 
 @roles.route("/add-permission", methods=["POST"])
 def add_permission():
+    session = get_session()
     try:
-        session = get_session()
         name = request.json["name"]
         new_permission = Permission(name=name)
         session.add(new_permission)
@@ -212,8 +212,8 @@ def add_permission():
 
 @roles.route("/update-permission", methods=["PUT"])
 def update_permission():
+    session = get_session()
     try:
-        session = get_session()
         new_name = request.json["name"]
         per_id = request.json["permission_id"]
         permission = session.query(Permission).filter_by(id=per_id).first()

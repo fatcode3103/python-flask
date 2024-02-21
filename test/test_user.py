@@ -12,7 +12,6 @@ def test_get_all_users(client, app, db_session):
         db_session.commit()
 
         response = client.get("/users")
-        print("user==========", response.json)
 
         assert response.status_code == 200
         assert response.json["message"] == "Get users successful"
@@ -35,3 +34,39 @@ def test_can_add_new_user(client, app, db_session):
         message = response.json["message"]
         assert user == mock_data
         assert message == "Create new user successful"
+
+
+def test_can_delete_user(client, app, db_session):
+    # init data
+    user = User(name="John", role_id=1)
+    db_session.add(user)
+    db_session.commit()
+
+    crr_user_id = user.id
+
+    with patch("webapp.users.get_session", return_value=db_session):
+        response = client.delete(f"/delete-user?user_id={crr_user_id}")
+
+    assert response.status_code == 200
+    assert response.json["message"] == "Delete user successful"
+
+    deleted_user = db_session.query(User).filter_by(id=crr_user_id).first()
+    assert deleted_user is None
+
+
+def test_can_update_user(client, app, db_session):
+    # init data
+    user = User(name="Jack", role_id=2)
+    db_session.add(user)
+    db_session.commit()
+    data = {"name": user.name, "role_id": user.role_id, "user_id": 1}
+
+    with patch("webapp.users.get_session", return_value=db_session):
+        response = client.put("/update-user", json=data)
+    assert response.status_code == 200
+    assert response.json["message"] == "Update user successful"
+
+    ## get user date after updated
+    updated_user = db_session.query(User).filter_by(id=1).first()
+    assert updated_user.name == "Jack"
+    assert updated_user.role_id == 2
