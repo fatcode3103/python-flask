@@ -57,8 +57,8 @@ def add_new_role():
         session.bulk_save_objects(permission_array)
         session.commit()
 
-        roles_data = get_all_roles()
-        return jsonify({"data": roles_data, "message": "Add new role successful"}), 200
+        crr_role = {"name": new_role.name, "permission_id": per_id_array}
+        return jsonify({"data": crr_role, "message": "Add new role successful"}), 200
     except Exception as ex:
         print(f"Error{ex}")
         session.rollback()
@@ -131,8 +131,8 @@ def update_role():
         session.close()
 
 
-session = get_session()
 def get_all_permissions():
+    session = get_session()
     all_permissions = session.query(Permission).all()
     permissions_data = []
     for per_data in all_permissions:
@@ -195,11 +195,9 @@ def add_permission():
         new_permission = Permission(name=name)
         session.add(new_permission)
         session.commit()
-        permissions_data = get_all_permissions()
+        crr_per = {"name": new_permission.name}
         return (
-            jsonify(
-                {"data": permissions_data, "message": "Add new permissions successful"}
-            ),
+            jsonify({"data": crr_per, "message": "Add new permissions successful"}),
             200,
         )
     except Exception as ex:

@@ -23,7 +23,12 @@ class Role(Base):
     group_permission = relationship("GroupPermission", back_populates="role")
 
     def __str__(self):
-        data = {"id": self.id, "name": self.name}
+        data = {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
         return data
 
 

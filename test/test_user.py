@@ -13,13 +13,13 @@ def test_get_all_users(client, app, db_session):
 
         response = client.get("/users")
 
-        assert response.status_code == 200
-        assert response.json["message"] == "Get users successful"
-        assert len(response.json["data"]) == 2
-        assert response.json["data"][0]["name"] == "John"
-        assert response.json["data"][0]["role_id"] == 1
-        assert response.json["data"][1]["name"] == "Jane"
-        assert response.json["data"][1]["role_id"] == 2
+    assert response.status_code == 200
+    assert response.json["message"] == "Get users successful"
+    assert len(response.json["data"]) == 2
+    assert response.json["data"][0]["name"] == "John"
+    assert response.json["data"][0]["role_id"] == 1
+    assert response.json["data"][1]["name"] == "Jane"
+    assert response.json["data"][1]["role_id"] == 2
 
 
 def test_can_add_new_user(client, app, db_session):
@@ -32,8 +32,8 @@ def test_can_add_new_user(client, app, db_session):
         response = client.post("/add-user", json=mock_data)
         user = response.json["data"]
         message = response.json["message"]
-        assert user == mock_data
-        assert message == "Create new user successful"
+    assert user == mock_data
+    assert message == "Create new user successful"
 
 
 def test_can_delete_user(client, app, db_session):
@@ -56,8 +56,9 @@ def test_can_delete_user(client, app, db_session):
 
 def test_can_update_user(client, app, db_session):
     # init data
+    user1 = User(name="Jey", role_id=2)
     user = User(name="Jack", role_id=2)
-    db_session.add(user)
+    db_session.add(user1)
     db_session.commit()
     data = {"name": user.name, "role_id": user.role_id, "user_id": 1}
 
@@ -67,6 +68,6 @@ def test_can_update_user(client, app, db_session):
     assert response.json["message"] == "Update user successful"
 
     ## get user date after updated
-    updated_user = db_session.query(User).filter_by(id=1).first()
+    updated_user = db_session.query(User).filter_by(id=data["user_id"]).first()
     assert updated_user.name == "Jack"
     assert updated_user.role_id == 2

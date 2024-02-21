@@ -27,7 +27,7 @@ def create_app():
     try:
         engine = get_engine()
         if engine:
-            print(f"Connection to the {host} for user {user} created successfully.")
+            pass
         else:
             raise Exception("Error connecting")
     except Exception as ex:
