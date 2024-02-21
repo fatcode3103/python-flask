@@ -4,7 +4,6 @@ from sqlalchemy.orm import joinedload, contains_eager
 from .models import User
 from .models import Role
 from . import get_session
-import json
 
 users = Blueprint("users", __name__)
 
@@ -22,14 +21,16 @@ def get_users_with_roles_data():
 
     users_data = []
     for user in users_with_roles_and_permission:
-        permissions = [
-            permission.permission_id for permission in user.role.group_permission
-        ]
+        permissions = (
+            [permission.permission_id for permission in user.role.group_permission]
+            if user.role
+            else None
+        )
         user_data = {
             "id": user.id,
             "name": user.name,
             "role_id": user.role_id,
-            "role_name": user.role.name if user.role else "none",
+            "role_name": user.role.name if user.role else None,
             "permission": permissions,
             "created_at": user.created_at,
             "updated_at": user.updated_at,
@@ -56,11 +57,11 @@ def add_user():
     try:
         session = get_session()
         new_user = User(name=request.json["name"], role_id=request.json["role_id"])
-        users_data = get_users_with_roles_data()
         session.add(new_user)
         session.commit()
+        crr_user = {"name": new_user.name, "role_id": new_user.role_id}
         return (
-            jsonify({"data": users_data, "message": "Create new user successful"}),
+            jsonify({"data": crr_user, "message": "Create new user successful"}),
             200,
         )
     except Exception as ex:
